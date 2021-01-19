@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/widgets/bottomLabels.dart';
 import 'package:chat_app/widgets/button_azul.dart';
 import 'package:chat_app/widgets/custom_input.dart';
 import 'package:chat_app/widgets/logo.dart';
+import 'package:chat_app/helpers/show_alert.dart';
 class LoginPage extends StatelessWidget {
 
   @override
@@ -57,9 +60,10 @@ class _Form extends StatefulWidget {
 class _FormState extends State<_Form> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  AuthService authService;
   @override
   Widget build(BuildContext context) {
+    authService = Provider.of<AuthService>(context);
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(
@@ -83,9 +87,14 @@ class _FormState extends State<_Form> {
           //TODO: crear botón
           ButtonAzul(
             placeholder: 'Ingresar',
-            callback: (){
-              print(_emailController.text);
-              print(_passwordController.text);
+            callback: authService.autenticando? null : ()async{ 
+              FocusScope.of(context).unfocus();
+              final bool loginOk = await authService.login(_emailController.text.trim(), _passwordController.text.trim());
+              if(loginOk){
+                Navigator.of(context).pushReplacementNamed('usuarios');
+              }else{
+                mostrarAlerta(context, 'Login fallido', 'Revise sus credenciales');
+              }
             },
           )
         ],
@@ -93,4 +102,3 @@ class _FormState extends State<_Form> {
     );
   }
 }
-

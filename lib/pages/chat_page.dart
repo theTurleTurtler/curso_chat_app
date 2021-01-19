@@ -15,8 +15,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin{
   final List<ChatMessage> _chatMessages = [
    
   ];
-
-
+   
   bool _estaEscribiendo = false;
 
   @override

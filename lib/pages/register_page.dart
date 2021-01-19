@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/widgets/bottomLabels.dart';
 import 'package:chat_app/widgets/button_azul.dart';
 import 'package:chat_app/widgets/custom_input.dart';
 import 'package:chat_app/widgets/logo.dart';
-class RegisterPage extends StatelessWidget {
+import 'package:chat_app/helpers/show_alert.dart';
 
+class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double screenHeight = MediaQuery.of(context).size.height;
+    
     return Scaffold(
       backgroundColor: Color(0xffF2F2F2),
       body: SingleChildScrollView(
@@ -58,9 +62,10 @@ class _FormState extends State<_Form> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
+  AuthService authService;
   @override
   Widget build(BuildContext context) {
+    authService = Provider.of<AuthService>(context);
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(
@@ -90,14 +95,26 @@ class _FormState extends State<_Form> {
           //TODO: crear botón
           ButtonAzul(
             placeholder: 'Ingresar',
-            callback: (){
-              print(_emailController.text);
-              print(_passwordController.text);
+            callback: authService.autenticando? null : ()async{
+              FocusScope.of(context).unfocus();
+              final Map<String, dynamic> servResponse = await authService.register(
+                _nameController.text, 
+                _emailController.text, 
+                _passwordController.text
+              );
+              if(servResponse['ok']){
+                Navigator.of(context).pushReplacementNamed('usuarios');
+              }else{
+                mostrarAlerta(context, 'Register fallido', '${servResponse['msg']}');
+              }
             },
           )
         ],
       ),
     );
   }
-}
 
+  Future<void> _register(){
+
+  }
+}

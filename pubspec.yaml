@@ -26,7 +26,15 @@ dependencies:
 
   #Para hacer animaciones pull refresh en los ListView
   pull_to_refresh: ^1.6.3
-
+  #Para uso de provider
+  provider: ^4.3.2+4
+  #Para uso de peticiones http
+  http: ^0.12.2
+  #Para el uso seguro del storage
+  flutter_secure_storage: ^3.3.5
+  #Para el manejo de sockoet.io
+  socket_io_client: ^0.9.12
+  
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.3
