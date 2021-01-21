@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:chat_app/models/entities/user.dart';
+import 'package:chat_app/models/services_responses/messages_response.dart';
 import 'package:chat_app/services/auth_service.dart';
 import 'package:chat_app/services/chat_service.dart';
 import 'package:chat_app/services/socket_service.dart';
@@ -32,6 +33,20 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin{
     _socketService = Provider.of<SocketService>(context, listen: false);
     _authService = Provider.of<AuthService>(context, listen: false);
     _socketService.socket.on('send_private_message', _listenInnerMessage);
+    _loadHistorial();
+  }
+
+  void _loadHistorial()async{
+    final String destinationUserId = _chatService.destinationUser.uid;
+    final List<Message> messages = await _chatService.getChat(destinationUserId);
+    List<ChatMessage> historial = messages.map((Message message)=>ChatMessage(
+      texto: message.message, 
+      uid: message.from, 
+      animationController: AnimationController(vsync: this, duration: Duration(milliseconds: 0))..forward()
+    )).toList();
+    setState(() {
+      _chatMessages.insertAll(0, historial);
+    });
   }
 
   void _listenInnerMessage(dynamic payload){
@@ -176,7 +191,7 @@ class _ChatPageState extends State<ChatPage> with TickerProviderStateMixin{
     _focusNode.requestFocus();
 
     final ChatMessage newMessage = ChatMessage(
-      uid: '123', 
+      uid: _authService.user.uid, 
       texto: text, 
       animationController: 
       AnimationController(vsync: this, duration: Duration(milliseconds: 350))
