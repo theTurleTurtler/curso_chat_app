@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:chat_app/models/user.dart';
+import 'package:chat_app/models/entities/user.dart';
 
 LoginResponse loginResponseFromJson(String str) => LoginResponse.fromJson(json.decode(str));
 String loginResponseToJson(LoginResponse data) => json.encode(data.toJson());

@@ -1,6 +1,7 @@
 import 'package:chat_app/pages/login_page.dart';
 import 'package:chat_app/pages/usuarios_page.dart';
 import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/services/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 class LoadingPage extends StatelessWidget {
@@ -23,10 +24,11 @@ class LoadingPage extends StatelessWidget {
   }
 
   Future<void> _checkLoginState()async{
+    final SocketService socketService = Provider.of<SocketService>(_context, listen: false);
     final AuthService authService = Provider.of(_context, listen: false);
     final Map<String, dynamic> renovTokenResponse = await authService.renovarToken();
     if(renovTokenResponse['ok']){
-      //TODO: Conectar al socket   
+      socketService.connect();
       _navigateToPage(UsuariosPage());
     }else{
       _navigateToPage(LoginPage());

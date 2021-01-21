@@ -1,3 +1,4 @@
+import 'package:chat_app/services/socket_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:chat_app/services/auth_service.dart';
@@ -66,6 +67,7 @@ class _FormState extends State<_Form> {
   @override
   Widget build(BuildContext context) {
     authService = Provider.of<AuthService>(context);
+    final SocketService socketService = Provider.of<SocketService>(context);
     return Container(
       margin: EdgeInsets.only(top: 40),
       padding: EdgeInsets.symmetric(
@@ -103,6 +105,7 @@ class _FormState extends State<_Form> {
                 _passwordController.text
               );
               if(servResponse['ok']){
+                socketService.connect();
                 Navigator.of(context).pushReplacementNamed('usuarios');
               }else{
                 mostrarAlerta(context, 'Register fallido', '${servResponse['msg']}');

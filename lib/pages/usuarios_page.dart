@@ -1,7 +1,9 @@
 import 'package:chat_app/services/auth_service.dart';
+import 'package:chat_app/services/chat_service.dart';
+import 'package:chat_app/services/socket_service.dart';
+import 'package:chat_app/services/users_service.dart';
 import 'package:flutter/material.dart';
-import 'package:chat_app/models/user.dart';
-import 'package:chat_app/utils/usuarios_test.dart';
+import 'package:chat_app/models/entities/user.dart';
 import 'package:provider/provider.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 class UsuariosPage extends StatefulWidget {
@@ -11,14 +13,21 @@ class UsuariosPage extends StatefulWidget {
 }
 
 class _UsuariosPageState extends State<UsuariosPage> {
-
+  final UsersService usersService = UsersService();
   final RefreshController _refreshController = RefreshController(initialRefresh: false);
+  List<User> users = [];
+
+  @override
+  void initState() { 
+    super.initState();
+    _loadUsers();
+  }
 
   @override
   Widget build(BuildContext context) {
     final AuthService authService = Provider.of<AuthService>(context);
     return Scaffold(
-      appBar: _createAppbar(authService.user.name),
+      appBar: _createAppbar(context, authService.user.name),
       body: SmartRefresher(
         controller: _refreshController,
         child: _createUsuariosListView(),
@@ -30,39 +39,45 @@ class _UsuariosPageState extends State<UsuariosPage> {
           waterDropColor: Colors.blue[400],
         ),
         enablePullDown: true,
-        onRefresh: _loadUsuarios,
+        onRefresh: _loadUsers,
       ),
     );
   }
 
   ListView _createUsuariosListView() {
     return ListView.separated(
-      itemBuilder: (_, i)=>_createUserTile(usuarios[i]), 
+      itemBuilder: (_, i)=>_createUserTile(users[i]), 
       separatorBuilder: (_, i)=>Divider(), 
-      itemCount: usuarios.length
+      itemCount: users.length
     );
   }
 
-  ListTile _createUserTile(User usuario) {
+  ListTile _createUserTile(User user) {
     return ListTile(
-        title: Text(usuario.name),
-        subtitle: Text(usuario.email),
+        title: Text(user.name),
+        subtitle: Text(user.email),
         leading: CircleAvatar(
-          child: Text(usuario.name.substring(0,2)),
+          child: Text(user.name.substring(0,2)),
           backgroundColor: Colors.blue[100],
         ),
         trailing: Container(
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-            color: usuario.online ? Colors.green[300] : Colors.red,
+            color: user.online ? Colors.green[300] : Colors.red,
             borderRadius: BorderRadius.circular(100)
           ),
         ),
+        onTap: (){
+          final ChatService chatService = Provider.of<ChatService>(context, listen: false);
+          chatService.destinationUser = user;
+          Navigator.of(context).pushNamed('chat');
+        },
       );
   }
 
-  Widget _createAppbar(String userName){
+  Widget _createAppbar(BuildContext context, String userName){
+    final SocketService socketService = Provider.of<SocketService>(context);
     return AppBar(
       title: Text(
         userName,
@@ -76,7 +91,7 @@ class _UsuariosPageState extends State<UsuariosPage> {
         icon: Icon(Icons.exit_to_app),
         color: Colors.black87,
         onPressed: (){
-          //TODO: Desconectarse del socketServer
+          socketService.disconnect();
           AuthService.deleteToken();
           Navigator.of(context).pushReplacementNamed('login');
         },
@@ -84,15 +99,20 @@ class _UsuariosPageState extends State<UsuariosPage> {
       actions: [
         Container(
           margin: EdgeInsets.only(right: 10),
-          child: Icon(Icons.check_circle, color: Colors.blue[400]),
-          //child: Icon(Icons.offline_bolt, color: Colors.red)
+          child: (socketService.serverStatus == ServerStatus.Online)?
+            Icon( Icons.check_circle, color: Colors.blue[400] )
+            : Icon(Icons.offline_bolt, color: Colors.red)
         )
       ],
     );
   }
 
-  Future<void> _loadUsuarios()async{
-    await Future.delayed(Duration(milliseconds: 1000));
+  Future<void> _loadUsers()async{
+    this.users = await usersService.loadUsers();
+    //await Future.delayed(Duration(milliseconds: 1000));
     _refreshController.refreshCompleted();
+    setState(() {
+      
+    });
   }
 }

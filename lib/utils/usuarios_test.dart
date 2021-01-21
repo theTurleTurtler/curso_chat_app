@@ -1,4 +1,4 @@
-import 'package:chat_app/models/user.dart';
+import 'package:chat_app/models/entities/user.dart';
 
 final List<User> usuarios = [
     User(
